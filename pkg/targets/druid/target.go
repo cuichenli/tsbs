@@ -7,6 +7,7 @@ import (
 	"github.com/timescale/tsbs/pkg/data/source"
 	"github.com/timescale/tsbs/pkg/targets"
 	"github.com/timescale/tsbs/pkg/targets/constants"
+	"github.com/timescale/tsbs/pkg/targets/json"
 )
 
 func NewTarget() targets.ImplementedTarget {
@@ -25,7 +26,7 @@ func (t *Target) TargetName() string {
 }
 
 func (t *Target) Serializer() serialize.PointSerializer {
-	return &Serializer{}
+	return &json.Serializer{}
 }
 
 func (t *Target) Benchmark(string, *source.DataSourceConfig, *viper.Viper) (targets.Benchmark, error) {

@@ -1,4 +1,4 @@
-package druid
+package json
 
 import (
 	"encoding/json"

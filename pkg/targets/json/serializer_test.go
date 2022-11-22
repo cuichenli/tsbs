@@ -1,4 +1,4 @@
-package druid
+package json
 
 import (
 	"github.com/timescale/tsbs/pkg/data/serialize"
