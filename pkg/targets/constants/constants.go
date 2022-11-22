@@ -15,7 +15,7 @@ const (
 	FormatTimestream      = "timestream"
 	FormatQuestDB         = "questdb"
 	FormatDruid           = "druid"
-	FormatDruidSpec       = "druidspec"
+	FormatElasticSearch   = "elasticsearch"
 )
 
 func SupportedFormats() []string {
@@ -33,5 +33,6 @@ func SupportedFormats() []string {
 		FormatTimestream,
 		FormatQuestDB,
 		FormatDruid,
+		FormatElasticSearch,
 	}
 }

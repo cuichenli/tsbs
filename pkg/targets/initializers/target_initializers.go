@@ -9,6 +9,7 @@ import (
 	"github.com/timescale/tsbs/pkg/targets/constants"
 	"github.com/timescale/tsbs/pkg/targets/crate"
 	"github.com/timescale/tsbs/pkg/targets/druid"
+	"github.com/timescale/tsbs/pkg/targets/elasticsearch"
 	"github.com/timescale/tsbs/pkg/targets/influx"
 	"github.com/timescale/tsbs/pkg/targets/mongo"
 	"github.com/timescale/tsbs/pkg/targets/prometheus"
@@ -48,6 +49,8 @@ func GetTarget(format string) targets.ImplementedTarget {
 		return questdb.NewTarget()
 	case constants.FormatDruid:
 		return druid.NewTarget()
+	case constants.FormatElasticSearch:
+		return elasticsearch.NewTarget()
 	}
 
 	supportedFormatsStr := strings.Join(constants.SupportedFormats(), ",")
