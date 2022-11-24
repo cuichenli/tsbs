@@ -38,6 +38,8 @@ func (t *Target) TargetSpecificFlags(flagPrefix string, flagSet *pflag.FlagSet) 
 	flagSet.String("timestamp-end", defaultTimeEnd, "Ending timestamp (RFC3339).")
 
 	flagSet.Int("debug", 0, "Control level of debug output")
+	flagSet.String("username", "", "Username of the elasticsearch instance")
+	flagSet.String("password", "", "Password of the elasticsearch instance")
 }
 
 func (t *Target) TargetName() string {

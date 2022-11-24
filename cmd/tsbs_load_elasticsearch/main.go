@@ -41,6 +41,8 @@ func initProgramOptions() (*elasticsearch.SpecificConfig, load.BenchmarkRunner, 
 		log.Fatalf("missing `indexes` flag")
 	}
 	realtime := viper.GetBool("realtime")
+	username := viper.GetString("username")
+	password := viper.GetString("password")
 
 	if realtime {
 		if err := viper.Unmarshal(&dataGeneratorConfig); err != nil {
@@ -54,7 +56,13 @@ func initProgramOptions() (*elasticsearch.SpecificConfig, load.BenchmarkRunner, 
 		dataGeneratorConfig.File = ""
 	}
 	loader := load.GetBenchmarkRunner(loaderConf)
-	return &elasticsearch.SpecificConfig{ServerURL: url, Indexes: strings.Split(indexes, ","), Realtime: realtime}, loader, &loaderConf, &dataGeneratorConfig
+	return &elasticsearch.SpecificConfig{
+		ServerURL: url,
+		Indexes:   strings.Split(indexes, ","),
+		Realtime:  realtime,
+		Username:  username,
+		Password:  password,
+	}, loader, &loaderConf, &dataGeneratorConfig
 }
 
 func main() {

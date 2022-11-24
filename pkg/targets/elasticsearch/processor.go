@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"github.com/timescale/tsbs/pkg/targets"
 	"log"
 	"math/rand"
@@ -13,9 +14,10 @@ import (
 )
 
 type processor struct {
-	url     string
-	indexes []string
-	random  *rand.Rand
+	url       string
+	indexes   []string
+	random    *rand.Rand
+	authToken string
 }
 
 func (p *processor) Init(workerNum int, doLoad, hashWorkers bool) {
@@ -34,7 +36,6 @@ func (p *processor) generateMeta() []byte {
 	meta, err := json.Marshal(map[string]interface{}{
 		"index": map[string]string{
 			"_index": p.indexes[p.random.Intn(len(p.indexes))],
-			"_type":  "doc",
 		},
 	})
 	if err != nil {
@@ -60,9 +61,12 @@ func (p *processor) do(b *batch) (uint64, uint64) {
 		if err != nil {
 			log.Fatalf("error while creating new request: %s", err)
 		}
-		req.Header.Set("Content-Type", "plain/text")
+		req.Header.Set("Content-Type", "application/x-ndjson")
 		req.Header.Set("Accept", "*/*")
 
+		if len(p.authToken) > 0 {
+			req.Header.Set("Authorization", fmt.Sprintf("Basic %s", p.authToken))
+		}
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Fatalf("error while executing request: %s", err)
