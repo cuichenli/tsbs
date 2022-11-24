@@ -8,16 +8,19 @@ import (
 	"github.com/timescale/tsbs/internal/utils"
 	"github.com/timescale/tsbs/load"
 	"github.com/timescale/tsbs/pkg/data/source"
+	"github.com/timescale/tsbs/pkg/data/usecases/common"
+	"github.com/timescale/tsbs/pkg/targets"
 	"github.com/timescale/tsbs/pkg/targets/elasticsearch"
 	"log"
 	"strings"
 )
 
 // Parse args:
-func initProgramOptions() (*elasticsearch.SpecificConfig, load.BenchmarkRunner, *load.BenchmarkRunnerConfig) {
+func initProgramOptions() (*elasticsearch.SpecificConfig, load.BenchmarkRunner, *load.BenchmarkRunnerConfig, *common.DataGeneratorConfig) {
 	target := elasticsearch.NewTarget()
 
 	loaderConf := load.BenchmarkRunnerConfig{}
+	dataGeneratorConfig := common.DataGeneratorConfig{}
 	loaderConf.AddToFlagSet(pflag.CommandLine)
 	target.TargetSpecificFlags("", pflag.CommandLine)
 	pflag.Parse()
@@ -37,17 +40,38 @@ func initProgramOptions() (*elasticsearch.SpecificConfig, load.BenchmarkRunner, 
 	if len(indexes) == 0 {
 		log.Fatalf("missing `indexes` flag")
 	}
+	realtime := viper.GetBool("realtime")
+
+	if realtime {
+		if err := viper.Unmarshal(&dataGeneratorConfig); err != nil {
+			panic(fmt.Errorf("unalbe to encode config for data generator: %s", err))
+		}
+		if err := viper.Unmarshal(&dataGeneratorConfig.BaseConfig); err != nil {
+			panic(fmt.Errorf("unalbe to encode config for data generator base config: %s", err))
+		}
+		dataGeneratorConfig.Format = "elasticsearch"
+		dataGeneratorConfig.InterleavedNumGroups = 1
+		dataGeneratorConfig.File = ""
+	}
 	loader := load.GetBenchmarkRunner(loaderConf)
-	return &elasticsearch.SpecificConfig{ServerURL: url, Indexes: strings.Split(indexes, ",")}, loader, &loaderConf
+	return &elasticsearch.SpecificConfig{ServerURL: url, Indexes: strings.Split(indexes, ","), Realtime: realtime}, loader, &loaderConf, &dataGeneratorConfig
 }
 
 func main() {
-	esconf, loader, loaderConf := initProgramOptions()
-
-	benchmark, err := elasticsearch.NewBenchmark(esconf, &source.DataSourceConfig{
-		Type: source.FileDataSourceType,
-		File: &source.FileDataSourceConfig{Location: loaderConf.FileName},
-	})
+	esconf, loader, loaderConf, dataGeneratorConf := initProgramOptions()
+	var benchmark targets.Benchmark
+	var err error
+	if esconf.Realtime {
+		benchmark, err = elasticsearch.NewBenchmark(esconf, &source.DataSourceConfig{
+			Type:      source.SimulatorDataSourceType,
+			Simulator: dataGeneratorConf,
+		})
+	} else {
+		benchmark, err = elasticsearch.NewBenchmark(esconf, &source.DataSourceConfig{
+			Type: source.FileDataSourceType,
+			File: &source.FileDataSourceConfig{Location: loaderConf.FileName},
+		})
+	}
 	if err != nil {
 		panic(err)
 	}

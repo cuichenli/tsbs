@@ -2,6 +2,7 @@ package elasticsearch
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"github.com/timescale/tsbs/pkg/targets"
 	"log"
@@ -52,6 +53,8 @@ func (p *processor) do(b *batch) (uint64, uint64) {
 			bodyBuilder.WriteString(event)
 			bodyBuilder.Write([]byte{'\n'})
 		}
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
 		r := bytes.NewBufferString(bodyBuilder.String())
 		req, err := http.NewRequest("POST", p.url, r)
 		if err != nil {
@@ -59,6 +62,7 @@ func (p *processor) do(b *batch) (uint64, uint64) {
 		}
 		req.Header.Set("Content-Type", "plain/text")
 		req.Header.Set("Accept", "*/*")
+
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Fatalf("error while executing request: %s", err)

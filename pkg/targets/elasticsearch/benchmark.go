@@ -3,7 +3,8 @@ package elasticsearch
 import (
 	"bufio"
 	"bytes"
-	"errors"
+	"fmt"
+	"github.com/timescale/tsbs/internal/inputs"
 	"github.com/timescale/tsbs/load"
 	"github.com/timescale/tsbs/pkg/data/source"
 	"github.com/timescale/tsbs/pkg/targets"
@@ -15,6 +16,7 @@ import (
 type SpecificConfig struct {
 	ServerURL string
 	Indexes   []string `yaml:"indexes" mapstructure:"indexes"`
+	Realtime  bool     `yaml:"realtime" mapstructure:"realtime"`
 }
 
 type benchmark struct {
@@ -25,17 +27,31 @@ type benchmark struct {
 
 func NewBenchmark(esSpecificConfig *SpecificConfig, dataSourceConfig *source.DataSourceConfig) (targets.Benchmark, error) {
 	if dataSourceConfig.Type != source.FileDataSourceType {
-		return nil, errors.New("only FILE data source type is supported for Elasticsearch")
+		var dummyBuffer bytes.Buffer
+		dataGenerator := &inputs.DataGenerator{
+			Out: bufio.NewWriter(&dummyBuffer),
+		}
+		simulator, err := dataGenerator.CreateSimulator(dataSourceConfig.Simulator)
+		if err != nil {
+			panic(fmt.Errorf("failed to create simulator: %s", err))
+		}
+		return &benchmark{
+			dataSource: &realtimeDataSource{
+				simulator,
+			},
+			serverURL: esSpecificConfig.ServerURL,
+			indexes:   esSpecificConfig.Indexes,
+		}, nil
+	} else {
+		br := load.GetBufferedReader(dataSourceConfig.File.Location)
+		return &benchmark{
+			dataSource: &fileDataSource{
+				scanner: bufio.NewScanner(br),
+			},
+			serverURL: esSpecificConfig.ServerURL,
+			indexes:   esSpecificConfig.Indexes,
+		}, nil
 	}
-
-	br := load.GetBufferedReader(dataSourceConfig.File.Location)
-	return &benchmark{
-		dataSource: &fileDataSource{
-			scanner: bufio.NewScanner(br),
-		},
-		serverURL: esSpecificConfig.ServerURL,
-		indexes:   esSpecificConfig.Indexes,
-	}, nil
 }
 
 func (b *benchmark) GetDataSource() targets.DataSource {

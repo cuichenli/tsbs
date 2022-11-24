@@ -6,7 +6,9 @@ import (
 	"io"
 )
 
-type Serializer struct{}
+type Serializer struct {
+	TimestampField string
+}
 
 func (s *Serializer) Serialize(p *data.Point, w io.Writer) error {
 	targetJson := make(map[string]interface{})
@@ -30,7 +32,11 @@ func (s *Serializer) Serialize(p *data.Point, w io.Writer) error {
 	}
 
 	timestamp := p.TimestampInUnixMs()
-	targetJson["timestamp"] = timestamp
+	if s.TimestampField == "" {
+		targetJson["timestamp"] = timestamp
+	} else {
+		targetJson[s.TimestampField] = timestamp
+	}
 	bytes, err := json.Marshal(targetJson)
 	if err != nil {
 		return err
