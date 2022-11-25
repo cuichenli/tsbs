@@ -16,6 +16,7 @@ const (
 	FormatQuestDB         = "questdb"
 	FormatDruid           = "druid"
 	FormatElasticSearch   = "elasticsearch"
+	FormatJson            = "json"
 )
 
 func SupportedFormats() []string {
@@ -34,5 +35,6 @@ func SupportedFormats() []string {
 		FormatQuestDB,
 		FormatDruid,
 		FormatElasticSearch,
+		FormatJson,
 	}
 }

@@ -27,7 +27,8 @@ loaders: tsbs_load \
  		 tsbs_load_timescaledb \
  		 tsbs_load_victoriametrics \
  		 tsbs_load_questdb \
- 		 tsbs_load_elasticsearch
+ 		 tsbs_load_elasticsearch \
+ 		 tsbs_load_kafka
 
 runners: tsbs_run_queries_akumuli \
 		 tsbs_run_queries_cassandra \
