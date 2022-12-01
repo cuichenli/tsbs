@@ -30,7 +30,7 @@ func (sc *SimulatorConfig) NewSimulator(interval time.Duration, limit uint64) co
 
 	return &Simulator{
 		base:            s,
-		batchSize:       defaultBatchSize,
+		batchSize:       0,
 		configGenerator: newBatchConfig,
 		maxFieldCount:   maxFieldCount,
 	}

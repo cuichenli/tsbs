@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/timescale/tsbs/pkg/data"
 	"github.com/timescale/tsbs/pkg/data/usecases/common"
 	"github.com/timescale/tsbs/pkg/targets/json"
@@ -23,6 +24,7 @@ func (r realtimeDataSource) NextItem() data.LoadedPoint {
 	var buffer bytes.Buffer
 	err := serializer.Serialize(newSimulatorPoint, &buffer)
 	if err != nil {
+		fmt.Errorf("failed to generate data: %s", err)
 		return data.LoadedPoint{}
 	}
 
