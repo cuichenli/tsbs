@@ -1,9 +1,9 @@
 # Build stage
-FROM golang:1.13.1-alpine AS builder
+FROM golang:1.17.1-alpine as builder
 WORKDIR /tsbs
 COPY ./ ./
-RUN apk update && apk add --no-cache git
-RUN go mod download && go install ./...
+RUN apk update && apk add --no-cache git make
+RUN make tsbs_load_kafka
 
 # Final stage
 FROM alpine:3.8.5

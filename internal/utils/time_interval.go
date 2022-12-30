@@ -103,6 +103,16 @@ func (ti *TimeInterval) MustRandWindow(window time.Duration) *TimeInterval {
 	return res
 }
 
+func (ti *TimeInterval) StaticWindow(window time.Duration) *TimeInterval {
+	lower := ti.start.UnixNano()
+	upper := ti.end.Add(-window).UnixNano()
+	x, err := NewTimeInterval(time.Unix(0, lower), time.Unix(0, upper))
+	if err != nil {
+		panic(err.Error())
+	}
+	return x
+}
+
 // Start returns the starting time in UTC.
 func (ti *TimeInterval) Start() time.Time {
 	return ti.start
