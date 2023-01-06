@@ -104,9 +104,8 @@ func (ti *TimeInterval) MustRandWindow(window time.Duration) *TimeInterval {
 }
 
 func (ti *TimeInterval) StaticWindow(window time.Duration) *TimeInterval {
-	lower := ti.start.UnixNano()
 	upper := ti.end.Add(-window).UnixNano()
-	x, err := NewTimeInterval(time.Unix(0, lower), time.Unix(0, upper))
+	x, err := NewTimeInterval(time.Unix(0, upper), ti.end)
 	if err != nil {
 		panic(err.Error())
 	}

@@ -1,11 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 	"sync"
 	"time"
@@ -63,14 +63,14 @@ func (w *HTTPClient) Do(q *query.HTTP, opts *HTTPClientDoOptions) (lag float64, 
 	w.uri = append(w.uri, w.Host...)
 	//w.uri = append(w.uri, bytesSlash...)
 	w.uri = append(w.uri, q.Path...)
-	w.uri = append(w.uri, []byte("&db="+url.QueryEscape(opts.database))...)
 	if opts.chunkSize > 0 {
 		s := fmt.Sprintf("&chunked=true&chunk_size=%d", opts.chunkSize)
 		w.uri = append(w.uri, []byte(s)...)
 	}
 
 	// populate a request with data from the Query:
-	req, err := http.NewRequest(string(q.Method), string(w.uri), nil)
+	req, err := http.NewRequest(string(q.Method), string(w.uri), bytes.NewReader(q.Body))
+	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		panic(err)
 	}
@@ -121,7 +121,7 @@ func (w *HTTPClient) Do(q *query.HTTP, opts *HTTPClientDoOptions) (lag float64, 
 			var v interface{}
 			var line []byte
 			full := make(map[string]interface{})
-			full["influxql"] = string(q.RawQuery)
+			full["druid"] = string(q.RawQuery)
 			json.Unmarshal(body, &v)
 			full["response"] = v
 			line, err = json.MarshalIndent(full, prefix, "  ")

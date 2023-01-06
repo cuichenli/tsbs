@@ -161,7 +161,7 @@ func getRandomHosts(numHosts int, totalHosts int) ([]string, error) {
 
 	hostnames := []string{}
 	for _, n := range randomNumbers {
-		hostnames = append(hostnames, fmt.Sprintf("host_%d", n))
+		hostnames = append(hostnames, fmt.Sprintf("'host_%d'", n))
 	}
 
 	return hostnames, nil

@@ -28,6 +28,16 @@ func (g *BaseGenerator) fillInQuery(qi query.Query, label string, desc string, s
 	q.Body = body
 }
 
+func (g *BaseGenerator) fillInNativeQuery(qi query.Query, label string, desc string, nativeQuery string) {
+	q := qi.(*query.HTTP)
+	q.HumanLabel = []byte(label)
+	q.RawQuery = []byte(nativeQuery)
+	q.HumanDescription = []byte(desc)
+	q.Method = []byte("POST")
+	q.Path = []byte("/druid/v2/?pretty")
+	q.Body = q.RawQuery
+}
+
 // NewDevops creates a new devops use case query generator.
 func (g *BaseGenerator) NewDevops(start, end time.Time, scale int) (utils.QueryGenerator, error) {
 	core, err := devops.NewCore(start, end, scale)

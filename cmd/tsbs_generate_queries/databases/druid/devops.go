@@ -58,14 +58,14 @@ func (d *Devops) LastPointPerHost(q query.Query) {
 }
 
 func (d *Devops) GroupByTimeAndPrimaryTag(qi query.Query, numMetrics int) {
-	interval := d.Interval.MustRandWindow(devops.DoubleGroupByDuration)
+	interval := d.Interval.StaticWindow(devops.DoubleGroupByDuration)
 	metrics, err := devops.GetCPUMetricsSlice(numMetrics)
 	databases.PanicIfErr(err)
-	selectClauses := d.getSelectClausesAggMetrics("mean", metrics)
+	selectClauses := d.getSelectClausesAggMetrics("avg", metrics)
 
 	humanLabel := fmt.Sprintf("Druid %d cpu metric(s)", numMetrics)
 	humanDesc := fmt.Sprintf("%s: %s", humanLabel, interval.StartString())
-	sql := fmt.Sprintf("SELECT FLOOR(\"__time\" to MINUTE) as minutes, hostname, %s from \"cpu-only\" where__time >= TIMESTAMP '%s' and __time < TIMESTAMP '%s' group by 1, hostname", strings.Join(selectClauses, ", "), d.getTimestamp(interval.Start()), d.getTimestamp(interval.End()))
+	sql := fmt.Sprintf("SELECT FLOOR(\"__time\" to MINUTE) as minutes, hostname, %s from \"cpu-only\" where __time >= TIMESTAMP '%s' and __time < TIMESTAMP '%s' group by 1, hostname", strings.Join(selectClauses, ", "), d.getTimestamp(interval.Start()), d.getTimestamp(interval.End()))
 	d.fillInQuery(qi, humanLabel, humanDesc, sql)
 }
 
